@@ -256,7 +256,7 @@ const vegMenuDiv = document.getElementById('veg-menu');
 const nonvegMenuDiv = document.getElementById('nonveg-menu');
 // ===== CART FUNCTIONS =====
 function addToCartHandler(e) {
-    const item = e.target.getAttribute('data-item');
+    const item = e.target.getAttribute('');
     const price = parseFloat(e.target.getAttribute('data-price'));
     if (!item || isNaN(price)) return;
     cart[item] = (cart[item] || 0) + 1;
@@ -395,7 +395,7 @@ function renderMenuFromData() {
         // Add to prices map
         itemPrices[item.name] = item.price;
         // Add to cart handler
-        const addBtn = menuItem.querySelector('.add-btn');
+        const addBtn = menuItem.querySelector('');
         addBtn.addEventListener('click', addToCartHandler);
         // If admin logged in, make editable
         if (adminLoggedIn) {

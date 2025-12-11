@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Hotel Gandharv - Food Menu</title>
+<style>
+/* CSS for a Clean, Modern Look */
+body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; color: #333; }
+.header { background-color: #004d40; /* Hotel primary color */ color: white; padding: 20px 0; text-align: center; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+.header h1 { margin: 0; font-size: 2.5em; }
+.admin-btn { margin-top: 10px; padding: 8px 16px; border: none; border-radius: 5px; background-color: #d32f2f; color: #fff; font-weight: bold; cursor: pointer; }
+.admin-btn:hover { background-color: #b71c1c; }
+.admin-action-btn { padding: 8px 14px; border-radius: 5px; border: none; background-color: #1976d2; color: #fff; cursor: pointer; font-size: 0.95em; }
+.admin-action-btn:hover { background-color: #0d47a1; }
+.editable { border: 1px dashed #ff9800; padding: 2px 4px; border-radius: 3px; background-color: #fff8e1; }
+.container { max-width: 1200px; margin: 20px auto; padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); display: flex; gap: 20px; }
+.menu-section { flex: 2; padding-right: 20px; border-right: 1px solid #eee; }
+.cart-section { flex: 1; padding: 20px; background-color: #e8f5e9; /* Light green for contrast */ border-radius: 6px; box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05); }
+h2 { color: #004d40; border-bottom: 2px solid #004d40; padding-bottom: 5px; margin-top: 0; }
+.category-toggle { text-align: center; margin-bottom: 20px; }
+.category-toggle button { padding: 10px 20px; margin: 0 5px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: background-color 0.3s; }
+.category-toggle .active { background-color: #004d40; color: white; }
+.category-toggle button:not(.active) { background-color: #ccc; color: #333; }
+.menu-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dotted #ccc; }
+.menu-item:last-child { border-bottom: none; }
+.item-details { flex-grow: 1; }
+.item-details h4 { margin: 0; }
+.item-details span { font-size: 0.9em; color: #666; }
+.item-price { font-weight: bold; color: #d32f2f; /* Red for price */ margin-right: 15px; }
+.add-btn { background-color: #4CAF50; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; transition: background-color 0.3s; }
+.add-btn:hover { background-color: #388e3c; }
+/* Cart Styles */
+#cart-items { list-style: none; padding: 0; }
+#cart-items li { padding: 8px 0; border-bottom: 1px dotted #ccc; display: flex; justify-content: space-between; align-items: center; }
+.checkout-btn { display: block; width: 100%; padding: 15px; margin-top: 20px; background-color: #ff9800; /* Orange checkout button */ color: white; border: none; border-radius: 5px; font-size: 1.1em; font-weight: bold; cursor: pointer; transition: background-color 0.3s; }
+.checkout-btn:hover { background-color: #fb8c00; }
+/* Modal Styles (shared) */
+.modal { display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
+.modal-content { background-color: #fff; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 600px; border-radius: 8px; position: relative; }
+.close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
+.close-btn:hover, .close-btn:focus { color: black; text-decoration: none; cursor: pointer; }
+.summary-details p { font-size: 1.1em; margin: 10px 0; }
+.summary-details .final-amount { font-size: 1.3em; font-weight: bold; color: #d32f2f; }
+.payment-status { background-color: #e0f2f1; padding: 15px; border-left: 5px solid #004d40; margin-top: 15px; font-weight: bold; }
+/* Inputs inside modals */
+.modal-content label { display: block; margin-top: 10px; font-weight: bold; }
+.modal-content input, .modal-content textarea, .modal-content select { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; border-radius: 4px; border: 1px solid #ccc; }
+</style>
+</head>
+<body>
+<div class="header">
+    <h1>🌿 HOTEL GANDHARV 🍴</h1>
+    <p>A taste of luxury, </p>
+    <button id="admin-login-btn" class="admin-btn">Admin Login</button>
+</div>
+<div class="container">
+    <div class="menu-section">
+        <h2>Select Your Dishes</h2>
+        <div class="category-toggle">
+            <button id="show-veg" class="active">🌱 VEG</button>
+            <button id="show-nonveg">🍗 NON-VEG</button>
+        </div>
+        <button id="add-dish-btn" class="admin-action-btn" style="display: none; margin-bottom: 15px;">
+            ➕ Add New Dish
+        </button>
+        <div id="veg-menu">
+            <div class="menu-item">
+                <div class="item-details">
+                    <h4>Paneer Tikka Masala</h4>
+                    <span>Cottage cheese in a spicy tomato gravy.</span>
+                </div>
+                <div class="item-price">₹ 200</div>
+                <button class="add-btn" data-item="Paneer Tikka Masala" data-price="200">Add</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-details">
+                    <h4>Dal Tadhaka</h4>
+                    <span>Creamy black lentil delicacy.</span>
+                </div>
+                <div class="item-price">₹ 180</div>
+                <button class="add-btn" data-item="Dal Tadhaka" data-price="180">Add</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-details">
+                    <h4>Kaju Masala</h4>
+                    <span>creamy delicious flaviour of nut.</span>
+                </div>
+                <div class="item-price">₹ 200</div>
+                <button class="add-btn" data-item="Kaju Masala" data-price="200">Add</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-details">
+                    <h4>Kolhapuri veg</h4>
+                    <span>rich in spicy and heaven teast.</span>
+                </div>
+                <div class="item-price">₹ 250</div>
+                <button class="add-btn" data-item="Kolhapuri Veg" data-price="250">Add</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-details">
+                    <h4>Roti</h4>
+                    <span>test in fest.</span>
+                </div>
+                <div class="item-price">₹ 20</div>
+                <button class="add-btn" data-item="Roti" data-price="20">Add</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-details">
+                    <h4>Veg Biryani</h4>
+                    <span>Aromatic basmati rice with vegetables.</span>
+                </div>
+                <div class="item-price">₹ 200</div>
+                <button class="add-btn" data-item="Veg Biryani" data-price="200">Add</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-details">
+                    <h4>Plane Rice</h4>
+                    <span>Aromatic basmati rice .</span>
+                </div>
+                <div class="item-price">₹ 100</div>
+                <button class="add-btn" data-item="Plane Rice" data-price="100">Add</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-details">
+                    <h4>Jeera Rice</h4>
+                    <span>Aromatic delhi rice .</span>
+                </div>
+                <div class="item-price">₹ 120</div>
+                <button class="add-btn" data-item="Jeera Rice" data-price="120">Add</button>
+            </div>
+        </div>
+        <div id="nonveg-menu" style="display: none;">
+            <div class="menu-item">
+                <div class="item-details">
+                    <h4>Butter Chicken</h4>
+                    <span>Tender chicken in a rich, buttery sauce.</span>
+                </div>
+                <div class="item-price">₹ 250</div>
+                <button class="add-btn" data-item="Butter Chicken" data-price="250">Add</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-details">
+                    <h4>Kolhapuri Tambada Pandhara</h4>
+                    <span>Kolhapuri style kala masala.</span>
+                </div>
+                <div class="item-price">₹ 300</div>
+                <button class="add-btn" data-item="Kolhapuri Tambada Pandhara" data-price="300">Add</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-details">
+                    <h4>Chicken Tikka Kebab</h4>
+                    <span>Marinated grilled chicken pieces.</span>
+                </div>
+                <div class="item-price">₹ 250</div>
+                <button class="add-btn" data-item="Chicken Tikka Kebab" data-price="250">Add</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-details">
+                    <h4>Chicken Biryani</h4>
+                    <span>Tender chicken in a rich</span>
+                </div>
+                <div class="item-price">₹ 250</div>
+                <button class="add-btn" data-item="Chicken Biryani" data-price="250">Add</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-details">
+                    <h4>Malvani</h4>
+                    <span>Kokan style .</span>
+                </div>
+                <div class="item-price">₹ 300</div>
+                <button class="add-btn" data-item="Malvani" data-price="300">Add</button>
+            </div>
+            <div class="menu-item">
+                <div class="item-details">
+                    <h4>Egg curry</h4>
+                    <span>Marinated grilled egg .</span>
+                </div>
+                <div class="item-price">₹ 150</div>
+                <button class="add-btn" data-item="Egg curry" data-price="150">Add</button>
+            </div>
+        </div>
+    </div>
+    <div class="cart-section">
+        <h2>🛒 Your Order</h2>
+        <ul id="cart-items">
+            <li id="empty-cart-message">Your cart is empty.</li>
+        </ul>
+        <hr>
+        <p>Subtotal: <span id="subtotal" style="float: right; font-weight: bold;">₹ 0</span></p>
+        <button class="checkout-btn" id="open-checkout">PROCEED TO CHECKOUT</button>
+    </div>
+</div>
+<div id="checkout-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2>✅ Order Summary & Payment</h2>
+        <ul id="final-order-summary" style="list-style: disc; padding-left: 20px;">
+        </ul>
+        <hr>
+        <div class="summary-details">
+            <p>Total Bill Amount: <span id="modal-total" class="final-amount" style="float: right;">₹ 0</span></p>
+            <p>Advance Payment (75%): <span id="advance-payment" class="final-amount" style="float: right; color: #004d40;">₹ 0</span></p>
+        </div>
+        <div class="payment-status">
+            <p>Required Payment: <span id="required-payment" class="final-amount">₹ 0</span> (75% Advance)</p>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 6px;">
+            <p style="font-weight: bold; margin-bottom: 10px; color: #d32f2f;">Scan to Pay 75% Advance</p>
+            
+            <p style="margin-top: 10px; font-size: 0.9em;">
+                UPI ID: <strong style="color: #004d40;">yashpanditrao19@okicici</strong>
+                <button onclick="navigator.clipboard.writeText('yashpanditrao19@okicici'); alert('UPI ID copied!');" style="background: none; border: none; color: #1976d2; cursor: pointer; padding: 0; margin-left: 5px; font-weight: bold;">[Copy]</button>
+            </p>
+        
+        </div>
+        </div>
+</div>
+<div id="admin-login-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="close-admin-login">&times;</span>
+        <h2>Admin Login</h2>
+        <label for="admin-username">User ID</label>
+        <input type="text" id="admin-username" placeholder="Enter User ID">
+        <label for="admin-password">Password</label>
+        <input type="password" id="admin-password" placeholder="Enter Password">
+        <button class="checkout-btn" id="admin-login-submit" style="margin-top: 15px;">Login</button>
+    </div>
+</div>
+<div id="add-dish-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="close-add-dish">&times;</span>
+        <h2>Add New Dish</h2>
+        <label for="new-dish-name">Dish Name</label>
+        <input type="text" id="new-dish-name" placeholder="Enter dish name">
+        <label for="new-dish-desc">Description</label>
+        <textarea id="new-dish-desc" rows="3" placeholder="Enter short description"></textarea>
+        <label for="new-dish-price">Price (₹)</label>
+        <input type="number" id="new-dish-price" min="1" placeholder="Enter price">
+        <label for="new-dish-category">Category</label>
+        <select id="new-dish-category">
+            <option value="veg">Veg</option>
+            <option value="nonveg">Non-Veg</option>
+        </select>
+        <button class="checkout-btn" id="save-dish-btn" style="margin-top: 15px;">Save Dish</button>
+    </div>
+</div>
+<script>
+// ===== CART & PRICES =====
+const cart = {}; // { itemName: qty }
+const itemPrices = {}; // { itemName: price }
+let grandTotal = 0;
+// ===== MENU DATA (PERSISTED) =====
+let menuItems = []; // {id, name, desc, price, category}
+let adminLoggedIn = false;
+const vegMenuDiv = document.getElementById('veg-menu');
+const nonvegMenuDiv = document.getElementById('nonveg-menu');
+// ===== CART FUNCTIONS =====
+function addToCartHandler(e) {
+    const item = e.target.getAttribute('data-item');
+    const price = parseFloat(e.target.getAttribute('data-price'));
+    if (!item || isNaN(price)) return;
+    cart[item] = (cart[item] || 0) + 1;
+    itemPrices[item] = price;
+    updateCartDisplay();
+}
+function updateCartDisplay() {
+    const cartList = document.getElementById('cart-items');
+    cartList.innerHTML = '';
+    grandTotal = 0;
+    const itemsInCart = Object.keys(cart).filter(item => cart[item] > 0);
+    if (itemsInCart.length === 0) {
+        cartList.innerHTML = '<li id="empty-cart-message">Your cart is empty.</li>';
+        document.getElementById('subtotal').textContent = `₹ 0`;
+        return;
+    }
+    itemsInCart.forEach(item => {
+        const quantity = cart[item];
+        const price = itemPrices[item] || 0;
+        const subtotal = quantity * price;
+        grandTotal += subtotal;
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <span>${item} (x${quantity})</span>
+            <span style="font-weight: bold;">₹ ${subtotal.toFixed(0)}</span>
+        `;
+        cartList.appendChild(li);
+    });
+    document.getElementById('subtotal').textContent = `₹ ${grandTotal.toFixed(0)}`;
+}
+// ===== MENU DATA INIT =====
+function saveMenuToLocalStorage() {
+    localStorage.setItem('hotelMenuItems', JSON.stringify(menuItems));
+}
+function buildMenuDataFromDOM() {
+    const items = [];
+    vegMenuDiv.querySelectorAll('.menu-item').forEach(mi => {
+        const name = mi.querySelector('.item-details h4')?.textContent.trim() || '';
+        const desc = mi.querySelector('.item-details span')?.textContent.trim() || '';
+        const priceText = mi.querySelector('.item-price')?.textContent || '0';
+        const price = parseFloat(priceText.replace(/[^\d.]/g, '')) || 0;
+        items.push({ id: 'veg-' + Math.random().toString(36).slice(2), name, desc, price, category: 'veg' });
+    });
+    nonvegMenuDiv.querySelectorAll('.menu-item').forEach(mi => {
+        const name = mi.querySelector('.item-details h4')?.textContent.trim() || '';
+        const desc = mi.querySelector('.item-details span')?.textContent.trim() || '';
+        const priceText = mi.querySelector('.item-price')?.textContent || '0';
+        const price = parseFloat(priceText.replace(/[^\d.]/g, '')) || 0;
+        items.push({ id: 'nonveg-' + Math.random().toString(36).slice(2), name, desc, price, category: 'nonveg' });
+    });
+    return items;
+}
+function makeMenuItemEditable(menuItemDiv, itemObj) {
+    const nameEl = menuItemDiv.querySelector('.item-details h4');
+    const descEl = menuItemDiv.querySelector('.item-details span');
+    const priceEl = menuItemDiv.querySelector('.item-price');
+    const addBtn = menuItemDiv.querySelector('.add-btn');
+    if (!nameEl || !priceEl || !addBtn) return;
+    // Enable edits
+    nameEl.setAttribute('contenteditable', 'true');
+    descEl.setAttribute('contenteditable', 'true');
+    priceEl.setAttribute('contenteditable', 'true');
+    nameEl.classList.add('editable');
+    descEl.classList.add('editable');
+    priceEl.classList.add('editable');
+    // Name change
+    nameEl.addEventListener('blur', function () {
+        const newName = this.textContent.trim();
+        if (!newName) {
+            alert('Name cannot be empty');
+            this.textContent = itemObj.name;
+            return;
+        }
+        const oldName = addBtn.getAttribute('data-item');
+        // Update object
+        itemObj.name = newName;
+        addBtn.setAttribute('data-item', newName);
+        // Update cart & prices keys
+        if (itemPrices.hasOwnProperty(oldName)) {
+            itemPrices[newName] = itemPrices[oldName];
+            delete itemPrices[oldName];
+        }
+        if (cart.hasOwnProperty(oldName)) {
+            cart[newName] = cart[oldName];
+            delete cart[oldName];
+        }
+        updateCartDisplay();
+        saveMenuToLocalStorage();
+    });
+    // Description change
+    descEl.addEventListener('blur', function () {
+        const newDesc = this.textContent.trim();
+        itemObj.desc = newDesc;
+        saveMenuToLocalStorage();
+    });
+    // Price change
+    priceEl.addEventListener('blur', function () {
+        const rawText = this.textContent;
+        const numeric = rawText.replace(/[^\d.]/g, '');
+        const newPrice = parseFloat(numeric);
+        if (isNaN(newPrice) || newPrice <= 0) {
+            alert('Please enter a valid price.');
+            this.textContent = `₹ ${itemObj.price.toFixed(0)}`;
+            return;
+        }
+        itemObj.price = newPrice;
+        const itemName = itemObj.name;
+        addBtn.setAttribute('data-price', newPrice);
+        itemPrices[itemName] = newPrice;
+        this.textContent = `₹ ${newPrice.toFixed(0)}`;
+        updateCartDisplay();
+        saveMenuToLocalStorage();
+    });
+}
+function renderMenuFromData() {
+    vegMenuDiv.innerHTML = '';
+    nonvegMenuDiv.innerHTML = '';
+    // Reset itemPrices
+    for (let key in itemPrices) {
+        delete itemPrices[key];
+    }
+    menuItems.forEach(item => {
+        const container = item.category === 'veg' ? vegMenuDiv : nonvegMenuDiv;
+        const menuItem = document.createElement('div');
+        menuItem.className = 'menu-item';
+        menuItem.dataset.id = item.id;
+        menuItem.innerHTML = `
+            <div class="item-details">
+                <h4>${item.name}</h4>
+                <span>${item.desc}</span>
+            </div>
+            <div class="item-price">₹ ${item.price.toFixed(0)}</div>
+            <button class="add-btn" data-item="${item.name}" data-price="${item.price}">Add</button>
+        `;
+        container.appendChild(menuItem);
+        // Add to prices map
+        itemPrices[item.name] = item.price;
+        // Add to cart handler
+        const addBtn = menuItem.querySelector('.add-btn');
+        addBtn.addEventListener('click', addToCartHandler);
+        // If admin logged in, make editable
+        if (adminLoggedIn) {
+            makeMenuItemEditable(menuItem, item);
+        }
+    });
+}
+function initMenuData() {
+    const stored = localStorage.getItem('hotelMenuItems');
+    if (stored) {
+        try {
+            const data = JSON.parse(stored);
+            if (Array.isArray(data) && data.length > 0) {
+                menuItems = data;
+                renderMenuFromData();
+                return;
+            }
+        } catch (e) {
+            console.error('Error parsing stored menu', e);
+        }
+    }
+    // No stored data -> build from initial HTML & save
+    menuItems = buildMenuDataFromDOM();
+    saveMenuToLocalStorage();
+    renderMenuFromData();
+}
+// ===== CHECKOUT MODAL =====
+const checkoutModal = document.getElementById("checkout-modal");
+const checkoutBtn = document.getElementById("open-checkout");
+const closeCheckoutBtn = checkoutModal.querySelector(".close-btn");
+checkoutBtn.onclick = function() {
+    if (grandTotal === 0) {
+        alert("Please add items to your cart before checking out.");
+        return;
+    }
+    const total = grandTotal;
+    const advancePercentage = 0.75;
+    const advancePayment = total * advancePercentage;
+    document.getElementById('modal-total').textContent = `₹ ${total.toFixed(0)}`;
+    document.getElementById('advance-payment').textContent = `₹ ${advancePayment.toFixed(0)}`;
+    document.getElementById('required-payment').textContent = `₹ ${advancePayment.toFixed(0)}`;
+    const finalSummaryList = document.getElementById('final-order-summary');
+    finalSummaryList.innerHTML = '';
+    Object.keys(cart).filter(item => cart[item] > 0).forEach(item => {
+        const quantity = cart[item];
+        const price = itemPrices[item] || 0;
+        const subtotal = quantity * price;
+        const li = document.createElement('li');
+        li.textContent = `${item} (x${quantity}) - Subtotal: ₹ ${subtotal.toFixed(0)}`;
+        finalSummaryList.appendChild(li);
+    });
+    checkoutModal.style.display = "block";
+}
+closeCheckoutBtn.onclick = function() {
+    checkoutModal.style.display = "none";
+}
+// ===== CATEGORY TOGGLE =====
+document.getElementById('show-veg').addEventListener('click', () => {
+    vegMenuDiv.style.display = 'block';
+    nonvegMenuDiv.style.display = 'none';
+    document.getElementById('show-veg').classList.add('active');
+    document.getElementById('show-nonveg').classList.remove('active');
+});
+document.getElementById('show-nonveg').addEventListener('click', () => {
+    vegMenuDiv.style.display = 'none';
+    nonvegMenuDiv.style.display = 'block';
+    document.getElementById('show-veg').classList.remove('active');
+    document.getElementById('show-nonveg').classList.add('active');
+});
+// ===== ADMIN LOGIN & ADD DISH =====
+const adminLoginBtn = document.getElementById('admin-login-btn');
+const adminLoginModal = document.getElementById('admin-login-modal');
+const closeAdminLogin = document.getElementById('close-admin-login');
+const adminLoginSubmit = document.getElementById('admin-login-submit');
+const addDishBtn = document.getElementById('add-dish-btn');
+const addDishModal = document.getElementById('add-dish-modal');
+const closeAddDish = document.getElementById('close-add-dish');
+const saveDishBtn = document.getElementById('save-dish-btn');
+adminLoginBtn.addEventListener('click', () => {
+    adminLoginModal.style.display = 'block';
+});
+closeAdminLogin.addEventListener('click', () => {
+    adminLoginModal.style.display = 'none';
+});
+adminLoginSubmit.addEventListener('click', () => {
+    const username = document.getElementById('admin-username').value.trim();
+    const password = document.getElementById('admin-password').value.trim();
+    if (username === 'rutu.123' && password === '1000') {
+        adminLoggedIn = true;
+        alert('Admin login successful! You can now edit dishes and add new ones.');
+        adminLoginModal.style.display = 'none';
+        addDishBtn.style.display = 'inline-block';
+        // Re-render menu (to attach editable on all)
+        renderMenuFromData();
+    } else {
+        alert('Incorrect User ID or Password');
+    }
+});
+addDishBtn.addEventListener('click', () => {
+    if (!adminLoggedIn) {
+        alert('Please login as admin first.');
+        return;
+    }
+    addDishModal.style.display = 'block';
+});
+closeAddDish.addEventListener('click', () => {
+    addDishModal.style.display = 'none';
+});
+saveDishBtn.addEventListener('click', () => {
+    const name = document.getElementById('new-dish-name').value.trim();
+    const desc = document.getElementById('new-dish-desc').value.trim();
+    const priceVal = document.getElementById('new-dish-price').value.trim();
+    const category = document.getElementById('new-dish-category').value;
+    const price = parseFloat(priceVal);
+    if (!name || !desc || isNaN(price) || price <= 0) {
+        alert('Please fill all fields with valid values.');
+        return;
+    }
+    const newItem = { id: category + '-' + Date.now(), name, desc, price, category };
+    menuItems.push(newItem);
+    saveMenuToLocalStorage();
+    renderMenuFromData();
+    document.getElementById('new-dish-name').value = '';
+    document.getElementById('new-dish-desc').value = '';
+    document.getElementById('new-dish-price').value = '';
+    document.getElementById('new-dish-category').value = 'veg';
+    addDishModal.style.display = 'none';
+    alert('New dish added successfully!');
+});
+// Close modals when clicking outside
+window.addEventListener('click', (event) => {
+    if (event.target === adminLoginModal) {
+        adminLoginModal.style.display = 'none';
+    }
+    if (event.target === addDishModal) {
+        addDishModal.style.display = 'none';
+    }
+    if (event.target === checkoutModal) {
+        checkoutModal.style.display = 'none';
+    }
+});
+// ===== INITIALIZE MENU FROM LOCALSTORAGE OR HTML =====
+initMenuData();
+</script>
+</body>
+</html>
